@@ -6,4 +6,3 @@ python-decouple==3.8
 jdatetime==5.0.0
 gunicorn==23.0.0
 whitenoise==6.8.2
-django-jalali==6.0.0

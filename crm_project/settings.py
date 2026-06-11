@@ -20,7 +20,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'jalali_date',
     'accounts',
     'leads',
     'invoices',
@@ -121,25 +120,3 @@ MESSAGE_TAGS = {
     messages_constants.ERROR: 'danger',
 }
 
-JALALI_DATE_DEFAULTS = {
-    'Strftime': {
-        'date': '%y/%m/%d',
-        'datetime': '%H:%M:%S _ %y/%m/%d',
-    },
-    'Static': {
-        'js': [
-            'admin/js/django_jalali.min.js',
-            'jquery.ui.datepicker.jalali/scripts/jquery-1.10.2.min.js',
-            'jquery.ui.datepicker.jalali/scripts/jquery.ui.core.min.js',
-            'jquery.ui.datepicker.jalali/scripts/calendar.js',
-            'jquery.ui.datepicker.jalali/scripts/jquery.ui.datepicker-cc.js',
-            'jquery.ui.datepicker.jalali/scripts/jquery.ui.datepicker-cc-fa.js',
-            'jquery.ui.datepicker.jalali/scripts/jquery.ui.datepicker.min.js',
-        ],
-        'css': {
-            'all': [
-                'jquery.ui.datepicker.jalali/themes/base/minified/jquery-ui.min.css',
-            ],
-        },
-    },
-}
