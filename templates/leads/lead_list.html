@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}سرنخ‌ها{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0"><i class="fa-solid fa-users-line text-primary me-2"></i>سرنخ‌ها</h4>
+  <a href="{% url 'leads:create' %}" class="btn btn-primary">
+    <i class="fa-solid fa-plus me-1"></i> سرنخ جدید
+  </a>
+</div>
+
+<!-- خلاصه آماری -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-primary-subtle text-primary"><i class="fa-solid fa-users"></i></div>
+      <div class="stat-value">{{ counts.total }}</div>
+      <div class="stat-label">کل سرنخ‌ها</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-warning-subtle text-warning"><i class="fa-solid fa-star"></i></div>
+      <div class="stat-value">{{ counts.new }}</div>
+      <div class="stat-label">جدید</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-success-subtle text-success"><i class="fa-solid fa-circle-check"></i></div>
+      <div class="stat-value">{{ counts.converted }}</div>
+      <div class="stat-label">تبدیل شده</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-danger-subtle text-danger"><i class="fa-solid fa-circle-xmark"></i></div>
+      <div class="stat-value">{{ counts.lost }}</div>
+      <div class="stat-label">از دست رفته</div>
+    </div>
+  </div>
+</div>
+
+<!-- فیلتر و جستجو -->
+<div class="card mb-3">
+  <div class="card-body py-3">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <input type="text" name="q" class="form-control" placeholder="جستجو بر اساس نام یا تلفن..." value="{{ search }}">
+      </div>
+      <div class="col-md-4">
+        <select name="status" class="form-select">
+          <option value="">همه وضعیت‌ها</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if val == current_status %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-fill">
+          <i class="fa-solid fa-magnifying-glass"></i> جستجو
+        </button>
+        <a href="{% url 'leads:list' %}" class="btn btn-outline-secondary">
+          <i class="fa-solid fa-xmark"></i>
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- جدول سرنخ‌ها -->
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>نام</th>
+          <th>شماره تماس</th>
+          <th>منبع</th>
+          <th>کارشناس</th>
+          <th>وضعیت</th>
+          <th>تاریخ ثبت</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lead in leads %}
+        <tr>
+          <td>
+            <a href="{% url 'leads:detail' lead.pk %}" class="text-decoration-none fw-medium">
+              {{ lead.name }}
+            </a>
+            {% if lead.company %}<div class="text-muted small">{{ lead.company }}</div>{% endif %}
+          </td>
+          <td dir="ltr" class="text-muted">{{ lead.phone }}</td>
+          <td class="text-muted small">{{ lead.utm_source.name|default:lead.source_detail|default:'مستقیم' }}</td>
+          <td>
+            {% if lead.assigned_to %}
+              <span class="badge bg-light text-dark border">{{ lead.assigned_to.full_name_or_username }}</span>
+            {% else %}
+              <span class="text-muted small">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge bg-{{ lead.status_color }}-subtle text-{{ lead.status_color }} border border-{{ lead.status_color }}-subtle">
+              {{ lead.get_status_display }}
+            </span>
+          </td>
+          <td class="text-muted small">{{ lead.created_at|date:"Y/m/d H:i" }}</td>
+          <td>
+            <a href="{% url 'leads:detail' lead.pk %}" class="btn btn-sm btn-outline-primary">
+              <i class="fa-solid fa-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-5">
+            <i class="fa-solid fa-inbox fa-2x mb-2 d-block opacity-25"></i>
+            سرنخی یافت نشد.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}لینک‌های تبلیغاتی{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0"><i class="fa-solid fa-link text-primary me-2"></i>لینک‌های تبلیغاتی (UTM)</h4>
+  <a href="{% url 'leads:utm_create' %}" class="btn btn-primary">
+    <i class="fa-solid fa-plus me-1"></i> کمپین جدید
+  </a>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>نام کمپین</th><th>منبع</th><th>رسانه</th>
+          <th>تعداد لید</th><th>وضعیت</th><th>لینک ثبت</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for src in sources %}
+        <tr>
+          <td class="fw-medium">{{ src.name }}</td>
+          <td dir="ltr" class="text-muted">{{ src.utm_source }}</td>
+          <td dir="ltr" class="text-muted">{{ src.utm_medium|default:'—' }}</td>
+          <td><span class="badge bg-primary-subtle text-primary">{{ src.leads.count }}</span></td>
+          <td>
+            {% if src.is_active %}
+              <span class="badge bg-success-subtle text-success">فعال</span>
+            {% else %}
+              <span class="badge bg-secondary-subtle text-secondary">غیرفعال</span>
+            {% endif %}
+          </td>
+          <td>
+            <code class="small user-select-all" dir="ltr">
+              {{ request.scheme }}://{{ request.get_host }}{{ src.capture_path }}
+            </code>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">کمپینی ثبت نشده است.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

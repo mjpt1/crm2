@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'leads:list' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="fa-solid fa-arrow-right"></i>
+  </a>
+  <h4 class="mb-0">{{ action }}</h4>
+</div>
+
+<div class="card" style="max-width: 700px">
+  <div class="card-body p-4">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label fw-medium">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary px-4">
+          <i class="fa-solid fa-floppy-disk me-1"></i> ذخیره
+        </button>
+        <a href="{% url 'leads:list' %}" class="btn btn-outline-secondary px-4">انصراف</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}پروفایل من{% endblock %}
+
+{% block content %}
+<h4 class="mb-4"><i class="fa-solid fa-user-circle text-primary me-2"></i>پروفایل کاربری</h4>
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card text-center p-4">
+      {% if target.avatar %}
+        <img src="{{ target.avatar.url }}" class="rounded-circle mx-auto d-block mb-3" style="width:96px;height:96px;object-fit:cover">
+      {% else %}
+        <div class="avatar-lg mx-auto mb-3">{{ target.first_name|first|default:target.username|first }}</div>
+      {% endif %}
+      <h5 class="mb-1">{{ target.full_name_or_username }}</h5>
+      <p class="text-muted mb-2">{{ target.get_role_display }}</p>
+      <span class="badge {% if target.is_online %}bg-success{% else %}bg-secondary{% endif %}">
+        {% if target.is_online %}آنلاین{% else %}آفلاین{% endif %}
+      </span>
+      <div class="mt-3">
+        <a href="{% url 'accounts:toggle_online' %}" class="btn btn-sm btn-outline-primary">
+          تغییر وضعیت
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header fw-bold">اطلاعات حساب</div>
+      <div class="card-body">
+        <dl class="row info-list mb-0">
+          <dt class="col-4">نام کاربری</dt>
+          <dd class="col-8" dir="ltr">{{ target.username }}</dd>
+          <dt class="col-4">نام</dt>
+          <dd class="col-8">{{ target.get_full_name|default:'—' }}</dd>
+          <dt class="col-4">ایمیل</dt>
+          <dd class="col-8" dir="ltr">{{ target.email|default:'—' }}</dd>
+          <dt class="col-4">تلفن</dt>
+          <dd class="col-8" dir="ltr">{{ target.phone|default:'—' }}</dd>
+          <dt class="col-4">نقش</dt>
+          <dd class="col-8">{{ target.get_role_display }}</dd>
+          {% if target.supervisor %}
+          <dt class="col-4">سوپروایزر</dt>
+          <dd class="col-8">{{ target.supervisor.full_name_or_username }}</dd>
+          {% endif %}
+          <dt class="col-4">ظرفیت لید</dt>
+          <dd class="col-8">{{ target.current_lead_count }} / {{ target.max_capacity }}</dd>
+        </dl>
+      </div>
+    </div>
+    {% if target.bio %}
+    <div class="card mt-3">
+      <div class="card-header fw-bold">بیوگرافی</div>
+      <div class="card-body">{{ target.bio }}</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

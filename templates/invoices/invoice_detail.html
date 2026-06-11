@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}فاکتور {{ invoice.invoice_number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'invoices:list' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="fa-solid fa-arrow-right"></i>
+  </a>
+  <h4 class="mb-0" dir="ltr">{{ invoice.invoice_number }}</h4>
+  <span class="badge bg-{{ invoice.status_color }}-subtle text-{{ invoice.status_color }} border border-{{ invoice.status_color }}-subtle ms-auto">
+    {{ invoice.get_status_display }}
+  </span>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header fw-bold">جزئیات فاکتور</div>
+      <div class="card-body">
+        <dl class="row info-list mb-0">
+          <dt class="col-5">شماره فاکتور</dt>
+          <dd class="col-7" dir="ltr">{{ invoice.invoice_number }}</dd>
+          <dt class="col-5">مشتری</dt>
+          <dd class="col-7">
+            <a href="{% url 'leads:detail' invoice.lead.pk %}">{{ invoice.lead.name }}</a>
+            <div class="text-muted small" dir="ltr">{{ invoice.lead.phone }}</div>
+          </dd>
+          <dt class="col-5">کارشناس</dt>
+          <dd class="col-7">{{ invoice.expert.full_name_or_username }}</dd>
+          <dt class="col-5">مبلغ</dt>
+          <dd class="col-7 fw-bold text-success fs-5">{{ invoice.amount_formatted }} تومان</dd>
+          <dt class="col-5">تاریخ صدور</dt>
+          <dd class="col-7 text-muted small">{{ invoice.created_at|date:"Y/m/d H:i" }}</dd>
+          {% if invoice.paid_at %}
+          <dt class="col-5">تاریخ پرداخت</dt>
+          <dd class="col-7 text-muted small">{{ invoice.paid_at|date:"Y/m/d H:i" }}</dd>
+          {% endif %}
+          {% if invoice.ref_number %}
+          <dt class="col-5">شماره مرجع</dt>
+          <dd class="col-7" dir="ltr">{{ invoice.ref_number }}</dd>
+          {% endif %}
+          {% if invoice.description %}
+          <dt class="col-5">شرح</dt>
+          <dd class="col-7">{{ invoice.description }}</dd>
+          {% endif %}
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header fw-bold">عملیات</div>
+      <div class="card-body d-flex flex-column gap-3">
+
+        {% if invoice.payment_url %}
+        <div class="p-3 bg-light rounded">
+          <div class="small text-muted mb-1">لینک پرداخت</div>
+          <div class="d-flex gap-2 align-items-center">
+            <code class="small flex-fill text-break" dir="ltr">{{ invoice.payment_url }}</code>
+            <button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ invoice.payment_url }}')">
+              <i class="fa-solid fa-copy"></i>
+            </button>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if invoice.status == 'pending' or invoice.status == 'approved' %}
+        <form method="post" action="{% url 'invoices:send_link' invoice.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fa-solid fa-link me-1"></i>
+            {% if invoice.payment_url %}بازسازی لینک پرداخت{% else %}ایجاد لینک پرداخت{% endif %}
+          </button>
+        </form>
+        {% endif %}
+
+        {% if not request.user.is_expert %}
+          {% if invoice.status == 'pending' %}
+          <form method="post" action="{% url 'invoices:approve' invoice.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-info w-100 text-white">
+              <i class="fa-solid fa-stamp me-1"></i> تایید مالی
+            </button>
+          </form>
+          {% endif %}
+
+          {% if invoice.status != 'paid' and invoice.status != 'cancelled' %}
+          <form method="post" action="{% url 'invoices:cancel' invoice.pk %}"
+                onsubmit="return confirm('فاکتور ابطال شود؟')">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger w-100">
+              <i class="fa-solid fa-ban me-1"></i> ابطال فاکتور
+            </button>
+          </form>
+          {% endif %}
+        {% endif %}
+
+        {% if invoice.status == 'paid' %}
+        <div class="alert alert-success mb-0">
+          <i class="fa-solid fa-circle-check me-1"></i>
+          این فاکتور در تاریخ {{ invoice.paid_at|date:"Y/m/d" }} وصول شده است.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

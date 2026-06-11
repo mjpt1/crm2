@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}مدیریت کاربران{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0"><i class="fa-solid fa-user-group text-primary me-2"></i>مدیریت کاربران</h4>
+  <a href="{% url 'accounts:user_create' %}" class="btn btn-primary">
+    <i class="fa-solid fa-user-plus me-1"></i> کاربر جدید
+  </a>
+</div>
+
+{% if supervisors %}
+<h5 class="section-title">سوپروایزرها</h5>
+<div class="card mb-4">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>نام</th><th>نام کاربری</th><th>تماس</th>
+          <th>اعضای تیم</th><th>وضعیت</th><th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in supervisors %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="avatar-sm-circle bg-primary text-white">{{ u.first_name|first|default:u.username|first }}</div>
+              {{ u.full_name_or_username }}
+            </div>
+          </td>
+          <td class="text-muted" dir="ltr">{{ u.username }}</td>
+          <td dir="ltr">{{ u.phone|default:'—' }}</td>
+          <td><span class="badge bg-info">{{ u.team_members.count }} نفر</span></td>
+          <td>
+            {% if u.is_active %}
+              <span class="badge bg-success-subtle text-success">فعال</span>
+            {% else %}
+              <span class="badge bg-danger-subtle text-danger">غیرفعال</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-sm btn-outline-primary me-1">
+              <i class="fa-solid fa-pen"></i>
+            </a>
+            <a href="{% url 'accounts:user_toggle' u.pk %}" class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+               onclick="return confirm('آیا مطمئنید؟')">
+              <i class="fa-solid {% if u.is_active %}fa-ban{% else %}fa-check{% endif %}"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-3">سوپروایزری ثبت نشده است.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<h5 class="section-title">کارشناسان</h5>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>نام</th><th>نام کاربری</th><th>سوپروایزر</th><th>تماس</th>
+          <th>ظرفیت</th><th>وضعیت</th><th>آنلاین</th><th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in experts %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="avatar-sm-circle bg-secondary text-white">{{ u.first_name|first|default:u.username|first }}</div>
+              {{ u.full_name_or_username }}
+            </div>
+          </td>
+          <td class="text-muted" dir="ltr">{{ u.username }}</td>
+          <td>{{ u.supervisor.full_name_or_username|default:'—' }}</td>
+          <td dir="ltr">{{ u.phone|default:'—' }}</td>
+          <td>
+            <span class="text-muted small">{{ u.current_lead_count }}/{{ u.max_capacity }}</span>
+          </td>
+          <td>
+            {% if u.is_active %}
+              <span class="badge bg-success-subtle text-success">فعال</span>
+            {% else %}
+              <span class="badge bg-danger-subtle text-danger">غیرفعال</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.is_online %}
+              <i class="fa-solid fa-circle text-success fa-xs"></i> آنلاین
+            {% else %}
+              <i class="fa-solid fa-circle text-secondary fa-xs"></i> آفلاین
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-sm btn-outline-primary me-1">
+              <i class="fa-solid fa-pen"></i>
+            </a>
+            <a href="{% url 'accounts:user_toggle' u.pk %}" class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+               onclick="return confirm('آیا مطمئنید؟')">
+              <i class="fa-solid {% if u.is_active %}fa-ban{% else %}fa-check{% endif %}"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center text-muted py-3">کارشناسی ثبت نشده است.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

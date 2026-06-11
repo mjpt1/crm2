@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+{% block title %}داشبورد{% endblock %}
+
+{% block content %}
+<!-- ─── کارت‌های خلاصه بالا ─── -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="kpi-card border-primary">
+      <div class="kpi-icon bg-primary"><i class="fa-solid fa-sack-dollar"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-label">فروش امروز</div>
+        <div class="kpi-value">{{ today_sales.total|default:0|floatformat:0 }}</div>
+        <div class="kpi-sub">{{ today_sales.count|default:0 }} فاکتور</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="kpi-card border-success">
+      <div class="kpi-icon bg-success"><i class="fa-solid fa-chart-line"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-label">فروش ماه</div>
+        <div class="kpi-value">{{ month_sales.total|default:0|floatformat:0 }}</div>
+        <div class="kpi-sub">{{ month_sales.count|default:0 }} فاکتور</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="kpi-card border-info">
+      <div class="kpi-icon bg-info"><i class="fa-solid fa-users-line"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-label">کل سرنخ‌ها</div>
+        <div class="kpi-value">{{ total_leads }}</div>
+        <div class="kpi-sub">{{ converted_leads }} تبدیل شده</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="kpi-card border-warning">
+      <div class="kpi-icon bg-warning"><i class="fa-solid fa-percent"></i></div>
+      <div class="kpi-body">
+        <div class="kpi-label">نرخ تبدیل</div>
+        <div class="kpi-value">{{ conversion_rate }}%</div>
+        <div class="kpi-sub">Conversion Rate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Top 3 رقابتی ─── -->
+{% if top3 %}
+<div class="section-header mb-3">
+  <h5 class="mb-0"><i class="fa-solid fa-trophy text-warning me-2"></i>برترین کارشناسان ماه</h5>
+</div>
+<div class="row g-3 mb-4">
+  {% for item in top3 %}
+  <div class="col-md-4">
+    <div class="top-card rank-{{ forloop.counter }}">
+      <div class="top-medal">
+        {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}
+      </div>
+      <div class="top-rank">#{{ forloop.counter }}</div>
+      <div class="top-avatar">{{ item.expert.first_name|first|default:item.expert.username|first }}</div>
+      <div class="top-name">{{ item.expert.full_name_or_username }}</div>
+      <div class="top-amount">{{ item.total|floatformat:0 }}</div>
+      <div class="top-unit">تومان</div>
+      <div class="top-stats">
+        <span><i class="fa-solid fa-file-invoice fa-xs"></i> {{ item.count }} فاکتور</span>
+        <span><i class="fa-solid fa-bullseye fa-xs"></i> {{ item.conversion_rate }}%</span>
+        {% if item.delta_minutes %}
+        <span><i class="fa-solid fa-clock fa-xs"></i> {{ item.delta_minutes }} دقیقه</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ─── نمودارها ─── -->
+<div class="row g-4 mb-4">
+  <!-- نمودار میله‌ای رقابتی -->
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">رتبه‌بندی فروش ماه جاری</span>
+        <span class="text-muted small">بر اساس مبلغ وصولی (تومان)</span>
+      </div>
+      <div class="card-body">
+        <canvas id="barChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- نمودار دونات وضعیت لیدها -->
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header fw-bold">توزیع وضعیت سرنخ‌ها</div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <canvas id="donutChart" style="max-height:260px"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نمودار روند ۳۰ روزه -->
+<div class="card mb-4">
+  <div class="card-header fw-bold">روند فروش ۳۰ روز گذشته</div>
+  <div class="card-body">
+    <canvas id="trendChart" height="120"></canvas>
+  </div>
+</div>
+
+<!-- ─── جدول عملکرد کارشناسان ─── -->
+<div class="card">
+  <div class="card-header fw-bold">
+    <i class="fa-solid fa-table me-2 text-primary"></i>جدول عملکرد تفصیلی
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>کارشناس</th>
+          <th>سوپروایزر</th>
+          <th>مبلغ ماهانه</th>
+          <th>فاکتور</th>
+          <th>سرنخ</th>
+          <th>نرخ تبدیل</th>
+          <th>کارکرد مفید</th>
+          <th>وضعیت</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in expert_stats %}
+        <tr>
+          <td class="text-muted">{{ forloop.counter }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="avatar-sm-circle {% if forloop.counter == 1 %}bg-warning{% elif forloop.counter == 2 %}bg-secondary{% elif forloop.counter == 3 %}bg-danger{% else %}bg-primary{% endif %} text-white">
+                {{ item.expert.first_name|first|default:item.expert.username|first }}
+              </div>
+              {{ item.expert.full_name_or_username }}
+            </div>
+          </td>
+          <td class="text-muted small">{{ item.expert.supervisor.full_name_or_username|default:'—' }}</td>
+          <td class="fw-bold text-success">{{ item.total|floatformat:0 }}</td>
+          <td>{{ item.count }}</td>
+          <td>{{ item.lead_count }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="progress flex-fill" style="height:6px; min-width:60px">
+                <div class="progress-bar bg-success" style="width:{{ item.conversion_rate }}%"></div>
+              </div>
+              <small>{{ item.conversion_rate }}%</small>
+            </div>
+          </td>
+          <td class="text-muted small">
+            {% if item.delta_minutes %}{{ item.delta_minutes }} دق{% else %}—{% endif %}
+          </td>
+          <td>
+            {% if item.expert.is_online %}
+              <span class="badge bg-success-subtle text-success"><i class="fa-solid fa-circle fa-xs"></i> آنلاین</span>
+            {% else %}
+              <span class="badge bg-secondary-subtle text-secondary"><i class="fa-solid fa-circle fa-xs"></i> آفلاین</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center text-muted py-4">داده‌ای برای نمایش وجود ندارد.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const LABELS   = {{ chart_labels_json|safe }};
+const DATA     = {{ chart_data_json|safe }};
+const TREND_L  = {{ trend_labels_json|safe }};
+const TREND_D  = {{ trend_data_json|safe }};
+const DONUT_D  = {{ lead_status_json|safe }};
+
+const PALETTE = [
+  '#4f46e5','#0ea5e9','#10b981','#f59e0b','#ef4444',
+  '#8b5cf6','#06b6d4','#84cc16','#f97316','#ec4899'
+];
+
+// ─── نمودار میله‌ای رقابتی ───
+new Chart(document.getElementById('barChart'), {
+  type: 'bar',
+  data: {
+    labels: LABELS,
+    datasets: [{
+      label: 'فروش (تومان)',
+      data: DATA,
+      backgroundColor: DATA.map((_, i) => PALETTE[i % PALETTE.length]),
+      borderRadius: 8,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ' ' + ctx.parsed.y.toLocaleString('fa-IR') + ' تومان'
+        }
+      },
+      datalabels: { display: false }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: v => v.toLocaleString('fa-IR')
+        }
+      },
+      x: { grid: { display: false } }
+    }
+  },
+  plugins: [{
+    id: 'topLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx, data } = chart;
+      ctx.save();
+      data.datasets[0].data.forEach((val, i) => {
+        const meta = chart.getDatasetMeta(0);
+        const bar  = meta.data[i];
+        ctx.fillStyle = '#374151';
+        ctx.font = 'bold 11px Vazirmatn, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(val.toLocaleString('fa-IR'), bar.x, bar.y - 4);
+      });
+      ctx.restore();
+    }
+  }]
+});
+
+// ─── نمودار دونات ───
+new Chart(document.getElementById('donutChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['جدید', 'تماس', 'علاقه‌مند', 'تبدیل شده', 'از دست رفته'],
+    datasets: [{
+      data: DONUT_D,
+      backgroundColor: ['#0ea5e9','#a78bfa','#fbbf24','#22c55e','#f87171'],
+      borderWidth: 2,
+      borderColor: '#fff',
+    }]
+  },
+  options: {
+    cutout: '65%',
+    plugins: {
+      legend: { position: 'bottom', labels: { usePointStyle: true, padding: 12 } }
+    }
+  }
+});
+
+// ─── نمودار روند ───
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: TREND_L,
+    datasets: [{
+      label: 'فروش روزانه',
+      data: TREND_D,
+      borderColor: '#4f46e5',
+      backgroundColor: 'rgba(79,70,229,.1)',
+      borderWidth: 2,
+      fill: true,
+      tension: 0.4,
+      pointRadius: 2,
+      pointHoverRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ' ' + ctx.parsed.y.toLocaleString('fa-IR') + ' تومان'
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { callback: v => v.toLocaleString('fa-IR') }
+      },
+      x: {
+        ticks: {
+          maxTicksLimit: 10,
+          callback: function(_, i) {
+            return TREND_L[i] ? TREND_L[i].slice(5) : '';
+          }
+        }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}
