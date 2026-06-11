@@ -1,11 +1,10 @@
 {
   "version": 2,
-  "buildCommand": "bash build_files.sh",
   "builds": [
     {
       "src": "crm_project/wsgi.py",
       "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb" }
+      "config": { "maxLambdaSize": "50mb" }
     }
   ],
   "routes": [
