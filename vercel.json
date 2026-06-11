@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": "bash build_files.sh",
+  "builds": [
+    {
+      "src": "crm_project/wsgi.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "15mb" }
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "crm_project/wsgi.py" }
+  ],
+  "env": {
+    "VERCEL": "1",
+    "SECRET_KEY": "@secret_key",
+    "DEBUG": "True"
+  }
+}
