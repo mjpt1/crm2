@@ -10,10 +10,5 @@
   ],
   "routes": [
     { "src": "/(.*)", "dest": "crm_project/wsgi.py" }
-  ],
-  "env": {
-    "VERCEL": "1",
-    "SECRET_KEY": "@secret_key",
-    "DEBUG": "True"
-  }
+  ]
 }
